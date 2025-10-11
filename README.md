@@ -13,7 +13,7 @@ or basic functions (strlen, strcmp, ...)
 - Code the interface between your kernel and the screen.
 - Display "42" on the screen.
 
-You should use those flags for compilation (c) : 
+You should use those flags for compilation (c) :
 - -fno-builtin
 - -fno-exception
 - -fno-stack-protector
@@ -32,7 +32,7 @@ Kernel binary.
 
 ## Starting point
 
--> ***GRUB*** two-stage bootloader
+-> ***GRUB*** two-stage bootloader (multiboot)
 
 -> compilation of the binary with ***Zig*** : `zig build-exe -target i386-freestanding -O ReleaseSmall`
 
@@ -47,11 +47,16 @@ Kernel binary.
 
 # this will install zig compiler and other stuff
 nix develop
+
+# to launch the compilation
+zig build # for now Makefile later
 ```
 
 ## Ressources
 
 [Osdev](https://wiki.osdev.org/Expanded_Main_Page)
+
+[Zig language guide](https://zig.guide/)
 
 [Littleosbook](littleosbook.github.io)
 
