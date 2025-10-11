@@ -65,3 +65,5 @@ zig build # for now Makefile later
 [Make your own kernel on C++](https://www.youtube.com/watch?v=uR3suoJeKVg)
 
 [Write Your Own 64-bit Operating System Kernel](https://www.youtube.com/watch?v=FkrpUaGThTQ)
+
+[C kernel explanation](https://wiki.osdev.org/Bare_Bones)
