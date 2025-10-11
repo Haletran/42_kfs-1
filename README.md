@@ -25,6 +25,13 @@ The makefile must compile all your source files with the right flags and the rig
 whatever-you-choose), so make (<- joke) your Makefile’s rules correctly. After compilation, all the objects must be linked together in order to create the final
 Kernel binary.
 
+## Start
+
+-> [Starting point](https://osdev.wiki/wiki/Boot_Sequence)
+
+
+
+
 ## Ressources
 
 [Osdev](https://wiki.osdev.org/Expanded_Main_Page)
