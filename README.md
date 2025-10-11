@@ -13,7 +13,7 @@ or basic functions (strlen, strcmp, ...)
 - Code the interface between your kernel and the screen.
 - Display "42" on the screen.
 
-You should use those flags for compilation : 
+You should use those flags for compilation (c) : 
 - -fno-builtin
 - -fno-exception
 - -fno-stack-protector
@@ -34,7 +34,11 @@ Kernel binary.
 
 -> ***GRUB*** two-stage bootloader
 
+-> compilation of the binary with ***Zig*** : `zig build-exe -target i386-freestanding -O ReleaseSmall`
 
+-> testing and booting the kernel : `qemu-system-i386 -cdrom kfs-1.iso`
+
+-> use ***grub-mkrescue*** for iso creation
 
 ## Ressources
 
