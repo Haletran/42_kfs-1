@@ -40,6 +40,15 @@ Kernel binary.
 
 -> use ***grub-mkrescue*** for iso creation
 
+
+## Installation
+
+```sh
+
+# this will install zig compiler and other stuff
+nix develop
+```
+
 ## Ressources
 
 [Osdev](https://wiki.osdev.org/Expanded_Main_Page)
