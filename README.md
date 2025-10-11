@@ -57,3 +57,6 @@ nix develop
 
 [Osdev wiki](https://osdev.wiki/wiki/Expanded_Main_Page)
 
+[Make your own kernel on C++](https://www.youtube.com/watch?v=uR3suoJeKVg)
+
+[Write Your Own 64-bit Operating System Kernel](https://www.youtube.com/watch?v=FkrpUaGThTQ)
