@@ -28,6 +28,8 @@ Kernel binary.
 ## Ressources
 
 [Osdev](https://wiki.osdev.org/Expanded_Main_Page)
+
 [Littleosbook](littleosbook.github.io)
+
 [Osdev wiki](https://osdev.wiki/wiki/Expanded_Main_Page)
 
