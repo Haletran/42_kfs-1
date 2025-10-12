@@ -1,27 +1,61 @@
 const std = @import("std");
-const kfs1 = @import("kfs1");
+const expectEqual = std.testing.expectEqual;
+
+const VGA_WIDTH = 80;
+const VGA_HEIGHT = 25;
+// RAM zone mapped to the screen, so
+const VGA_MEMORY: usize = 0xb8000;
+// buffer to modify the posistion to put the character to the screen ex : 0xB8004 2,0
+// since each character is equal to 2 bytes (16bits) (byte 0 = ascii code - byte 1 = color 4bits bg and 4bits fg)
+var buffer: [*]volatile u16 = @ptrFromInt(VGA_MEMORY);
+var terminal_color: [*]volatile u8 = 0;
+
+// standard color palette from IBM computer
+const vga_color = enum(u4) {
+    VGA_COLOR_BLACK = 0,
+    VGA_COLOR_BLUE = 1,
+    VGA_COLOR_GREEN = 2,
+    VGA_COLOR_CYAN = 3,
+    VGA_COLOR_RED = 4,
+    VGA_COLOR_MAGENTA = 5,
+    VGA_COLOR_BROWN = 6,
+    VGA_COLOR_LIGHT_GREY = 7,
+    VGA_COLOR_DARK_GREY = 8,
+    VGA_COLOR_LIGHT_BLUE = 9,
+    VGA_COLOR_LIGHT_GREEN = 10,
+    VGA_COLOR_LIGHT_CYAN = 11,
+    VGA_COLOR_LIGHT_RED = 12,
+    VGA_COLOR_LIGHT_MAGENTA = 13,
+    VGA_COLOR_LIGHT_BROWN = 14,
+    VGA_COLOR_WHITE = 15,
+};
+
+// custom strlen
+pub fn strlen(str: []const u8) usize {
+    var len: usize = 0;
+
+    while (len < str.len) {
+        len += 1;
+    }
+    return len;
+}
+
+test "custom strlen" {
+    try expectEqual(@as(usize, 5), strlen("hello"));
+    try expectEqual(@as(usize, 0), strlen(""));
+    try expectEqual(@as(usize, 11), strlen("hello-world"));
+}
+
+// merge bg and fg color (the bg need to be cast into u8 before doing the multiplication)
+inline fn vga_entry_color(bg: u4, fg: u4) u8 {
+    return fg | (@as(u8, bg) * 16);
+}
+
+test "merge_color" {
+    try expectEqual(@as(u8, 22), vga_entry_color(@intFromEnum(vga_color.VGA_COLOR_BLUE), @intFromEnum(vga_color.VGA_COLOR_BROWN)));
+    try expectEqual(@as(u8, 97), vga_entry_color(@intFromEnum(vga_color.VGA_COLOR_BROWN), @intFromEnum(vga_color.VGA_COLOR_BLUE)));
+}
 
 pub fn main() !void {
-    // Prints to stderr, ignoring potential errors.
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
-    try kfs1.bufferedPrint();
-}
-
-test "simple test" {
-    const gpa = std.testing.allocator;
-    var list: std.ArrayList(i32) = .empty;
-    defer list.deinit(gpa); // Try commenting this out and see if zig detects the memory leak!
-    try list.append(gpa, 42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
-}
-
-test "fuzz example" {
-    const Context = struct {
-        fn testOne(context: @This(), input: []const u8) anyerror!void {
-            _ = context;
-            // Try passing `--fuzz` to `zig build test` and see if it manages to fail this test case!
-            try std.testing.expect(!std.mem.eql(u8, "canyoufindme", input));
-        }
-    };
-    try std.testing.fuzz(Context{}, Context.testOne, .{});
+    terminal_color = vga_entry_color(vga_color.VGA_COLOR_LIGHT_MAGENTA, vga_color.VGA_COLOR_BLACK);
 }
