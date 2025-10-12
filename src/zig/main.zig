@@ -47,13 +47,21 @@ test "custom strlen" {
 }
 
 // merge bg and fg color (the bg need to be cast into u8 before doing the multiplication)
+// 4bits + 4bits = 8bits -> 1 byte
 inline fn vga_entry_color(bg: u4, fg: u4) u8 {
     return fg | (@as(u8, bg) * 16);
+    //return fg | (@as(u8, bg) << 4);
 }
 
-test "merge_color" {
+test "merge_bg_fg" {
     try expectEqual(@as(u8, 22), vga_entry_color(@intFromEnum(vga_color.VGA_COLOR_BLUE), @intFromEnum(vga_color.VGA_COLOR_BROWN)));
     try expectEqual(@as(u8, 97), vga_entry_color(@intFromEnum(vga_color.VGA_COLOR_BROWN), @intFromEnum(vga_color.VGA_COLOR_BLUE)));
+}
+
+// merge the character and the color
+// 8bits + 8bits = 16bits -> 2 bytes
+inline fn vga_entry(c: u8, color: u8) u16 {
+    return (@as(u16, c)) | (@as(u16, color) * 256);
 }
 
 pub fn main() !void {
