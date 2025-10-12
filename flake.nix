@@ -16,6 +16,7 @@
             pkgs.zig
             pkgs.zsh
             pkgs.tigervnc
+            pkgs.mtools
           ];
 
           shellHook = ''
