@@ -34,7 +34,7 @@ Kernel binary.
 
 -> ***GRUB*** two-stage bootloader (multiboot)
 
--> compilation of the binary with ***Zig*** : `zig build-exe -target i386-freestanding -O ReleaseSmall`
+-> compilation of the binary with ***Zig***
 
 -> testing and booting the kernel : `qemu-system-i386 -cdrom kfs-1.iso`
 
@@ -47,11 +47,8 @@ Kernel binary.
 # this will install zig compiler and other stuff
 nix develop
 
-# to launch the compilation of the c version
+# to launch the compilation
 bash build.sh
-
-# to launch the compilation of the zig version
-zig build
 ```
 
 ## Ressources
