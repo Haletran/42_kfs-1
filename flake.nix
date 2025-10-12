@@ -15,6 +15,7 @@
           buildInputs = [
             pkgs.zig
             pkgs.zsh
+            pkgs.tigervnc
           ];
 
           shellHook = ''

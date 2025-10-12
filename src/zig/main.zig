@@ -8,7 +8,7 @@ const VGA_MEMORY: usize = 0xb8000;
 // buffer to modify the posistion to put the character to the screen ex : 0xB8004 2,0
 // since each character is equal to 2 bytes (16bits) (byte 0 = ascii code - byte 1 = color 4bits bg and 4bits fg)
 var buffer: [*]volatile u16 = @ptrFromInt(VGA_MEMORY);
-var terminal_color: [*]volatile u8 = 0;
+var terminal_color: u8 = 0;
 
 // standard color palette from IBM computer
 const vga_color = enum(u4) {
@@ -64,6 +64,21 @@ inline fn vga_entry(c: u8, color: u8) u16 {
     return (@as(u16, c)) | (@as(u16, color) * 256);
 }
 
-pub fn main() !void {
-    terminal_color = vga_entry_color(vga_color.VGA_COLOR_LIGHT_MAGENTA, vga_color.VGA_COLOR_BLACK);
+test "merge_char_color" {
+    try expectEqual(@as(u16, 0x4F41), vga_entry(@as(u8, 'A'), @as(u8, 79)));
+    try expectEqual(@as(u16, 0x2041), vga_entry(@as(u8, 'A'), @as(u8, 32)));
+}
+
+fn init_term() void {
+    terminal_color = vga_entry_color(@intFromEnum(vga_color.VGA_COLOR_LIGHT_MAGENTA), @intFromEnum(vga_color.VGA_COLOR_BLACK));
+    for (0..VGA_HEIGHT) |y| {
+        for (0..VGA_WIDTH) |x| {
+            const index: usize = y * VGA_WIDTH + x;
+            buffer[index] = vga_entry(' ', terminal_color);
+        }
+    }
+}
+
+export fn kernel_main() void {
+    init_term();
 }
