@@ -44,12 +44,14 @@ Kernel binary.
 ## Installation
 
 ```sh
-
 # this will install zig compiler and other stuff
 nix develop
 
-# to launch the compilation
-zig build # for now Makefile later
+# to launch the compilation of the c version
+bash build.sh
+
+# to launch the compilation of the zig version
+zig build
 ```
 
 ## Ressources
