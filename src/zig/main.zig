@@ -11,6 +11,7 @@ var buffer: [*]volatile u16 = @ptrFromInt(VGA_MEMORY);
 var terminal_color: u8 = 0;
 var terminal_row: usize = 0;
 var terminal_column: usize = 0;
+var character_position: usize = 0;
 const ArrayList = std.ArrayList;
 const test_allocator = std.testing.allocator;
 
@@ -79,6 +80,7 @@ test "merge_char_color" {
 
 // color the fullscreen in the chosen terminal color
 fn init_term() void {
+    // here to change the terminal bg and fg color
     terminal_color = vga_entry_color(@intFromEnum(vga_color.VGA_COLOR_LIGHT_MAGENTA), @intFromEnum(vga_color.VGA_COLOR_BLACK));
     for (0..VGA_HEIGHT) |y| {
         for (0..VGA_WIDTH) |x| {
@@ -88,13 +90,12 @@ fn init_term() void {
     }
 }
 
-// string (color and str)
-// putstr -> putchar (one character by one)
-// global terminal color
-// how to set the position ?? The render is column and row
-var character_position: usize = 0;
-
 fn putchar(c: u8, pos: usize) void {
+    if (c == '\n') {
+        terminal_row += 1;
+        character_position = 0;
+        return;
+    }
     buffer[pos] = vga_entry(c, terminal_color);
 }
 
@@ -115,6 +116,24 @@ pub fn inb(port: u16) u8 {
         : [port] "{dx}" (port),
     );
 }
+pub inline fn outb(port: u16, value: u8) void {
+    asm volatile ("outb %[v], %[p]"
+        :
+        : [p] "{dx}" (port),
+          [v] "{al}" (value),
+        : .{ .memory = true });
+}
+
+pub inline fn moveCursor(x: u16, y: u16) void {
+    const pos: u16 = y * 80 + x;
+
+    // Send low byte
+    outb(0x3D4, 0x0F);
+    outb(0x3D5, @as(u8, @intCast(pos & 0xFF)));
+    // Send high byte
+    outb(0x3D4, 0x0E);
+    outb(0x3D5, @as(u8, @intCast((pos >> 8) & 0xFF)));
+}
 
 // get the scancode of the pressed key and return it
 fn scankey() u8 {
@@ -132,16 +151,14 @@ fn render_input() void {
             if (character_position > 0) {
                 character_position -= 1;
                 putchar(' ', base_position + character_position);
+                moveCursor(@intCast(character_position), @intCast(terminal_row));
             }
-        } else if (scancode == 28) {
-            terminal_row += 1;
-            putchar(' ', base_position + character_position);
-            character_position = 0;
         } else {
             const c: u8 = keymaps[scancode];
             if (c != 0) {
                 putchar(c, character_position + base_position);
                 character_position += 1;
+                moveCursor(@intCast(character_position), @intCast(terminal_row));
             }
         }
     }
@@ -149,8 +166,7 @@ fn render_input() void {
 
 export fn kernel_main() void {
     init_term();
-    put_string("-> Bienvenue dans ce super kernel :) <-");
-    terminal_row += 1;
+    put_string("-> Bienvenue dans ce super kernel de suceur :) <-\n");
     while (true) {
         render_input();
     }
