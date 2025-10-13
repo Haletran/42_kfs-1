@@ -11,6 +11,8 @@ var buffer: [*]volatile u16 = @ptrFromInt(VGA_MEMORY);
 var terminal_color: u8 = 0;
 var terminal_row: usize = 0;
 var terminal_column: usize = 0;
+const ArrayList = std.ArrayList;
+const test_allocator = std.testing.allocator;
 
 // standard color palette from IBM computer
 const vga_color = enum(u4) {
@@ -31,6 +33,10 @@ const vga_color = enum(u4) {
     VGA_COLOR_LIGHT_BROWN = 14,
     VGA_COLOR_WHITE = 15,
 };
+
+const keymap = [3]u8{ 'a', 'b', 'c' };
+
+const keymaps = [_]u8{ 0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 0, 0, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', 0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0 };
 
 // custom strlen
 pub fn strlen(str: []const u8) usize {
@@ -86,6 +92,7 @@ fn init_term() void {
 // putstr -> putchar (one character by one)
 // global terminal color
 // how to set the position ?? The render is column and row
+var asd: usize = 0;
 
 fn putchar(c: u8, pos: usize) void {
     buffer[pos] = vga_entry(c, terminal_color);
@@ -102,9 +109,37 @@ fn put_string(str: []const u8) void {
     terminal_row += 1;
 }
 
+// dont understand anything
+pub inline fn inb(port: u16) u8 {
+    return asm volatile ("inb %dx, %al"
+        : [value] "={al}" (-> u8),
+        : [port] "{dx}" (port),
+    );
+}
+
+// get the scancode of the pressed key and return it
+fn scankey() u8 {
+    while (true) {
+        if ((inb(0x64) & 0x1) != 0)
+            return (inb(0x60));
+    }
+}
+
+fn render_input() void {
+    const scancode: u8 = scankey();
+    if (scancode < keymaps.len) {
+        const c: u8 = keymaps[scancode];
+        if (c != 0) {
+            const base: usize = terminal_row * VGA_WIDTH;
+            putchar(c, asd + base);
+            asd += 1;
+        }
+    }
+}
+
 export fn kernel_main() void {
     init_term();
-    for (0..VGA_HEIGHT) |_| {
-        put_string("Sylvain");
+    while (true) {
+        render_input();
     }
 }
