@@ -9,6 +9,7 @@ const VGA_MEMORY: usize = 0xb8000;
 // since each character is equal to 2 bytes (16bits) (byte 0 = ascii code - byte 1 = color 4bits bg and 4bits fg)
 var buffer: [*]volatile u16 = @ptrFromInt(VGA_MEMORY);
 var terminal_color: u8 = 0;
+var terminal_row: usize = 0;
 
 // standard color palette from IBM computer
 const vga_color = enum(u4) {
@@ -69,6 +70,7 @@ test "merge_char_color" {
     try expectEqual(@as(u16, 0x2041), vga_entry(@as(u8, 'A'), @as(u8, 32)));
 }
 
+// color the fullscreen in the chosen terminal color
 fn init_term() void {
     terminal_color = vga_entry_color(@intFromEnum(vga_color.VGA_COLOR_LIGHT_MAGENTA), @intFromEnum(vga_color.VGA_COLOR_BLACK));
     for (0..VGA_HEIGHT) |y| {
@@ -79,6 +81,27 @@ fn init_term() void {
     }
 }
 
+// string (color and str)
+// putstr -> putchar (one character by one)
+// global terminal color
+// how to set the position ?? The render is column and row
+
+fn putchar(c: u8, pos: usize) void {
+    buffer[pos] = vga_entry(c, terminal_color);
+}
+
+fn put_string(str: []const u8) void {
+    var pos: usize = 0;
+    const len: usize = strlen(str);
+    const base: usize = terminal_row * VGA_WIDTH;
+    for (0..len) |i| {
+        putchar(str[i], pos + base);
+        pos += 1;
+    }
+    terminal_row += 1;
+}
+
 export fn kernel_main() void {
     init_term();
+    put_string("42");
 }

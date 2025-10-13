@@ -2,11 +2,6 @@ mkdir -p out
 if [ -f "out/kfs.iso" ]; then
   rm out/kfs.iso
 fi
-if [ ! -d "tools" ]; then
-    wget https://github.com/lordmilko/i686-elf-tools/releases/download/7.1.0/i686-elf-tools-linux.zip
-    unzip i686-elf-tools-linux.zip -d tools
-    rm i686-elf-tools-linux.zip
-fi
 
 ./tools/bin/i686-elf-as src/c/boot.s -o out/boot.o
 zig build-obj src/zig/main.zig \
