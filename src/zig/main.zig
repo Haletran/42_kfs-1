@@ -109,7 +109,7 @@ fn put_string(str: []const u8) void {
     }
 }
 
-// dont understand anything
+// dont understand anything (WTF)
 pub fn inb(port: u16) u8 {
     return asm volatile ("inb %dx, %al"
         : [value] "={al}" (-> u8),
@@ -124,6 +124,7 @@ pub inline fn outb(port: u16, value: u8) void {
         : .{ .memory = true });
 }
 
+//https://wiki.osdev.org/Text_Mode_Cursor
 pub inline fn moveCursor(x: u16, y: u16) void {
     const pos: u16 = y * 80 + x;
 
@@ -147,13 +148,16 @@ fn render_input() void {
     const scancode: u8 = scankey();
     if (scancode < keymaps.len) {
         const base_position: usize = terminal_row * VGA_WIDTH;
+        // delete last character
         if (scancode == 0x0E) {
             if (character_position > 0) {
                 character_position -= 1;
                 putchar(' ', base_position + character_position);
                 moveCursor(@intCast(character_position), @intCast(terminal_row));
             }
-        } else {
+        }
+        // add a character
+        else {
             const c: u8 = keymaps[scancode];
             if (c != 0) {
                 putchar(c, character_position + base_position);
