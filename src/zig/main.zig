@@ -39,6 +39,33 @@ const keymap = [3]u8{ 'a', 'b', 'c' };
 
 const keymaps = [_]u8{ 0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 0, 0, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', 0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0 };
 
+// dont understand anything (WTF)
+pub fn inb(port: u16) u8 {
+    return asm volatile ("inb %dx, %al"
+        : [value] "={al}" (-> u8),
+        : [port] "{dx}" (port),
+    );
+}
+pub inline fn outb(port: u16, value: u8) void {
+    asm volatile ("outb %[v], %[p]"
+        :
+        : [p] "{dx}" (port),
+          [v] "{al}" (value),
+        : .{ .memory = true });
+}
+
+//https://wiki.osdev.org/Text_Mode_Cursor
+pub inline fn moveCursor(x: u16, y: u16) void {
+    const pos: u16 = y * 80 + x;
+
+    // Send low byte
+    outb(0x3D4, 0x0F);
+    outb(0x3D5, @as(u8, @intCast(pos & 0xFF)));
+    // Send high byte
+    outb(0x3D4, 0x0E);
+    outb(0x3D5, @as(u8, @intCast((pos >> 8) & 0xFF)));
+}
+
 // custom strlen
 pub fn strlen(str: []const u8) usize {
     var len: usize = 0;
@@ -107,32 +134,7 @@ fn put_string(str: []const u8) void {
         putchar(str[i], pos + base);
         pos += 1;
     }
-}
-
-// dont understand anything
-pub fn inb(port: u16) u8 {
-    return asm volatile ("inb %dx, %al"
-        : [value] "={al}" (-> u8),
-        : [port] "{dx}" (port),
-    );
-}
-pub inline fn outb(port: u16, value: u8) void {
-    asm volatile ("outb %[v], %[p]"
-        :
-        : [p] "{dx}" (port),
-          [v] "{al}" (value),
-        : .{ .memory = true });
-}
-
-pub inline fn moveCursor(x: u16, y: u16) void {
-    const pos: u16 = y * 80 + x;
-
-    // Send low byte
-    outb(0x3D4, 0x0F);
-    outb(0x3D5, @as(u8, @intCast(pos & 0xFF)));
-    // Send high byte
-    outb(0x3D4, 0x0E);
-    outb(0x3D5, @as(u8, @intCast((pos >> 8) & 0xFF)));
+    moveCursor(@intCast(character_position), @intCast(terminal_row));
 }
 
 // get the scancode of the pressed key and return it
@@ -147,17 +149,22 @@ fn render_input() void {
     const scancode: u8 = scankey();
     if (scancode < keymaps.len) {
         const base_position: usize = terminal_row * VGA_WIDTH;
+        // delete last character
         if (scancode == 0x0E) {
             if (character_position > 0) {
                 character_position -= 1;
                 putchar(' ', base_position + character_position);
                 moveCursor(@intCast(character_position), @intCast(terminal_row));
             }
-        } else {
+        }
+        // add a character
+        else {
             const c: u8 = keymaps[scancode];
             if (c != 0) {
                 putchar(c, character_position + base_position);
-                character_position += 1;
+                if (c != '\n') {
+                    character_position += 1;
+                }
                 moveCursor(@intCast(character_position), @intCast(terminal_row));
             }
         }
