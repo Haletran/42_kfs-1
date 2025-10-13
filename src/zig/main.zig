@@ -108,7 +108,7 @@ test "merge_char_color" {
 // color the fullscreen in the chosen terminal color
 fn init_term() void {
     // here to change the terminal bg and fg color
-    terminal_color = vga_entry_color(@intFromEnum(vga_color.VGA_COLOR_LIGHT_MAGENTA), @intFromEnum(vga_color.VGA_COLOR_BLACK));
+    terminal_color = vga_entry_color(@intFromEnum(vga_color.VGA_COLOR_BLACK), @intFromEnum(vga_color.VGA_COLOR_WHITE));
     for (0..VGA_HEIGHT) |y| {
         for (0..VGA_WIDTH) |x| {
             const index: usize = y * VGA_WIDTH + x;
@@ -171,9 +171,21 @@ fn render_input() void {
     }
 }
 
+fn welcome_screen() void {
+    put_string(" _   ___ _______ \n");
+    put_string("| | |   |       |\n");
+    put_string("| |_|   |____   |\n");
+    put_string("|       |____|  |\n");
+    put_string("|___    | ______|\n");
+    put_string("    |   | |_____ \n");
+    put_string("    |___|_______|\n");
+
+    put_string("-> Bienvenue dans ce super kernel en zig :) <-\n\n");
+}
+
 export fn kernel_main() void {
     init_term();
-    put_string("-> Bienvenue dans ce super kernel de suceur :) <-\n");
+    welcome_screen();
     while (true) {
         render_input();
     }
