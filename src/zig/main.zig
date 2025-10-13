@@ -10,6 +10,7 @@ const VGA_MEMORY: usize = 0xb8000;
 var buffer: [*]volatile u16 = @ptrFromInt(VGA_MEMORY);
 var terminal_color: u8 = 0;
 var terminal_row: usize = 0;
+var terminal_column: usize = 0;
 
 // standard color palette from IBM computer
 const vga_color = enum(u4) {
@@ -103,5 +104,7 @@ fn put_string(str: []const u8) void {
 
 export fn kernel_main() void {
     init_term();
-    put_string("42");
+    for (0..VGA_HEIGHT) |_| {
+        put_string("Sylvain");
+    }
 }
