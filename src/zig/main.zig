@@ -92,7 +92,7 @@ fn init_term() void {
 // putstr -> putchar (one character by one)
 // global terminal color
 // how to set the position ?? The render is column and row
-var asd: usize = 0;
+var character_position: usize = 0;
 
 fn putchar(c: u8, pos: usize) void {
     buffer[pos] = vga_entry(c, terminal_color);
@@ -106,11 +106,10 @@ fn put_string(str: []const u8) void {
         putchar(str[i], pos + base);
         pos += 1;
     }
-    terminal_row += 1;
 }
 
 // dont understand anything
-pub inline fn inb(port: u16) u8 {
+pub fn inb(port: u16) u8 {
     return asm volatile ("inb %dx, %al"
         : [value] "={al}" (-> u8),
         : [port] "{dx}" (port),
@@ -128,17 +127,30 @@ fn scankey() u8 {
 fn render_input() void {
     const scancode: u8 = scankey();
     if (scancode < keymaps.len) {
-        const c: u8 = keymaps[scancode];
-        if (c != 0) {
-            const base: usize = terminal_row * VGA_WIDTH;
-            putchar(c, asd + base);
-            asd += 1;
+        const base_position: usize = terminal_row * VGA_WIDTH;
+        if (scancode == 0x0E) {
+            if (character_position > 0) {
+                character_position -= 1;
+                putchar(' ', base_position + character_position);
+            }
+        } else if (scancode == 28) {
+            terminal_row += 1;
+            putchar(' ', base_position + character_position);
+            character_position = 0;
+        } else {
+            const c: u8 = keymaps[scancode];
+            if (c != 0) {
+                putchar(c, character_position + base_position);
+                character_position += 1;
+            }
         }
     }
 }
 
 export fn kernel_main() void {
     init_term();
+    put_string("-> Bienvenue dans ce super kernel :) <-");
+    terminal_row += 1;
     while (true) {
         render_input();
     }
