@@ -17,6 +17,8 @@
             pkgs.zsh
             pkgs.tigervnc
             pkgs.mtools
+            pkgs.qemu
+            pkgs.grub2
           ];
 
           shellHook = ''
