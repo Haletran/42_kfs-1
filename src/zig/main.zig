@@ -1,4 +1,5 @@
 const std = @import("std");
+const frames_data = @import("frames_data.zig");
 const expectEqual = std.testing.expectEqual;
 
 const VGA_WIDTH = 80;
@@ -219,6 +220,62 @@ fn render_input() void {
         }
     }
 }
+fn clear_screen() void {
+    for (0..VGA_HEIGHT) |y| {
+        for (0..VGA_WIDTH) |x| {
+            const index: usize = y * VGA_WIDTH + x;
+            buffer[index] = vga_entry(' ', terminal_color);
+        }
+    }
+    terminal_row = 0;
+    terminal_column = 0;
+    character_position = 0;
+}
+
+// thanks
+fn render_ascii_frame(frame_data: []const u8) void {
+    clear_screen();
+    terminal_row = 0;
+    character_position = 0;
+
+    for (frame_data) |c| {
+        if (c == '\n') {
+            terminal_row += 1;
+            character_position = 0;
+            if (terminal_row >= VGA_HEIGHT) break;
+        } else {
+            if (character_position < VGA_WIDTH and terminal_row < VGA_HEIGHT) {
+                const pos = terminal_row * VGA_WIDTH + character_position;
+                buffer[pos] = vga_entry(c, terminal_color);
+                character_position += 1;
+            }
+        }
+    }
+}
+
+fn delay(milliseconds: usize) void {
+    var i: usize = 0;
+    const cycles = milliseconds * 1000;
+    while (i < cycles) : (i += 1) {
+        asm volatile ("nop");
+    }
+}
+
+fn play_ascii_video() void {
+    const frames = [_][]const u8{
+        "  O  \n /|\\ \n / \\ \n",
+        " \\O/ \n  |  \n / \\ \n",
+        "  O  \n /|\\ \n / \\ \n",
+    };
+
+    const fps = 10; // Frames par seconde
+    const frame_delay = 1000 / fps;
+
+    for (frames) |frame| {
+        render_ascii_frame(frame);
+        delay(frame_delay);
+    }
+}
 
 fn welcome_screen() void {
     put_string(" _   ___ _______ \n");
@@ -234,7 +291,10 @@ fn welcome_screen() void {
 
 export fn kernel_main() void {
     init_term();
-    welcome_screen();
+    for (frames_data.all_frames) |frame| {
+        render_ascii_frame(frame);
+        delay(30000);
+    }
     while (true) {
         render_input();
         scroll_down();
