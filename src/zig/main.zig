@@ -170,11 +170,19 @@ fn render_input() void {
     }
 
     if (scancode < keymaps_not_shifted.len or scancode < keymaps_shifted.len) {
-        // delete last character
         if (scancode == DELETE_KEY) {
+            // delete last character
             if (character_position > 0) {
                 character_position -= 1;
                 putchar(' ', base_position + character_position);
+                moveCursor(@intCast(character_position), @intCast(terminal_row));
+            }
+            // delete the last character of the previous line if there position pos,0 so goback to the last line to delete
+            else if (character_position == 0 and terminal_row >= 1) {
+                terminal_row -= 1;
+                character_position = VGA_WIDTH - 1;
+                const new_base_position: usize = terminal_row * VGA_WIDTH;
+                putchar(' ', new_base_position + character_position);
                 moveCursor(@intCast(character_position), @intCast(terminal_row));
             }
         }
@@ -185,6 +193,10 @@ fn render_input() void {
                 putchar(c, character_position + base_position);
                 if (c != '\n') {
                     character_position += 1;
+                }
+                if (character_position >= VGA_WIDTH) {
+                    terminal_row += 1;
+                    character_position = 0;
                 }
                 moveCursor(@intCast(character_position), @intCast(terminal_row));
             }

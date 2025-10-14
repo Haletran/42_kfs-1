@@ -2,3 +2,4 @@
 zig-out
 tools
 out
+build.zig.zon

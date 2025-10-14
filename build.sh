@@ -13,7 +13,6 @@ zig build-obj src/zig/main.zig \
 grub-file --is-x86-multiboot out/kfs.bin
 cp out/kfs.bin iso/boot/kfs.bin
 grub-mkrescue -o out/kfs.iso iso
-qemu-system-i386 -cdrom out/kfs.iso #doesn't work with iso file in c idk why
-#qemu-system-i386 -kernel out/kfs.bin
+qemu-system-i386 -cdrom out/kfs.iso
 rm -rf out/*.o out/kfs.bin
 rm -rf iso/boot/kfs.bin
