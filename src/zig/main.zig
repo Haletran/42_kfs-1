@@ -44,8 +44,8 @@ const keymaps_shifted = [_]u8{ 0, 0, '!', '@', '#', '$', '%', '^', '&', '*', '('
 
 // dont understand anything (WTF)
 pub fn inb(port: u16) u8 {
-    return asm volatile ("inb %dx, %al"
-        : [value] "={al}" (-> u8),
+    return asm volatile ("inb %[port], %[ret]"
+        : [ret] "={al}" (-> u8),
         : [port] "{dx}" (port),
     );
 }
@@ -222,8 +222,4 @@ export fn kernel_main() void {
     while (true) {
         render_input();
     }
-}
-
-pub fn main() void {
-    // just to be able to compile and run the tests
 }
