@@ -1,47 +1,11 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const target = b.standardTargetOptions(.{});
-    const optimize = b.standardOptimizeOption(.{});
-    const mod = b.addModule("kfs1", .{
-        .root_source_file = b.path("src/zig/root.zig"),
-        .target = target,
-    });
-    const exe = b.addExecutable(.{
-        .name = "kfs1",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/zig/main.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                // import this module (e.g. `@import("kfs1")`). The name is
-                // repeated because you are allowed to rename your imports, which
-                // can be extremely useful in case of collisions (which can happen
-                // importing modules from different packages).
-                .{ .name = "kfs1", .module = mod },
-            },
-        }),
+    const build_obj = b.addSystemCommand(&.{
+        "zig",                     "build-obj",    "src/zig/main.zig",
+        "-femit-bin=out/kernel.o", "-target",      "x86-freestanding-none",
+        "-O",                      "ReleaseSmall",
     });
 
-    b.installArtifact(exe);
-    const run_step = b.step("run", "Run the app");
-    const run_cmd = b.addRunArtifact(exe);
-    run_step.dependOn(&run_cmd.step);
-    run_cmd.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
-    const mod_tests = b.addTest(.{
-        .root_module = mod,
-    });
-    const run_mod_tests = b.addRunArtifact(mod_tests);
-    const exe_tests = b.addTest(.{
-        .root_module = exe.root_module,
-    });
-
-    const run_exe_tests = b.addRunArtifact(exe_tests);
-
-    const test_step = b.step("test", "Run tests");
-    test_step.dependOn(&run_mod_tests.step);
-    test_step.dependOn(&run_exe_tests.step);
+    b.default_step.dependOn(&build_obj.step);
 }

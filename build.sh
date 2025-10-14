@@ -3,13 +3,10 @@ if [ -f "out/kfs.iso" ]; then
   rm out/kfs.iso
 fi
 
-./tools/bin/i686-elf-as src/c/boot.s -o out/boot.o
-zig build-obj src/zig/main.zig \
-  -femit-bin=out/kernel.o \
-  -target x86-freestanding-none \
-  -O ReleaseSmall
+./tools/bin/i686-elf-as src/boot.s -o out/boot.o
+zig build
 #./tools/bin/i686-elf-gcc -c src/c/kernel.c -o out/kernel.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra
-./tools/bin/i686-elf-gcc -T src/c/linker.ld -o out/kfs.bin -ffreestanding -O2 -nostdlib out/boot.o out/kernel.o -lgcc
+./tools/bin/i686-elf-gcc -T src/linker.ld -o out/kfs.bin -ffreestanding -O2 -nostdlib out/boot.o out/kernel.o -lgcc
 grub-file --is-x86-multiboot out/kfs.bin
 cp out/kfs.bin iso/boot/kfs.bin
 grub-mkrescue -o out/kfs.iso iso

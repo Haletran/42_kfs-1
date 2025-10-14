@@ -223,3 +223,7 @@ export fn kernel_main() void {
         render_input();
     }
 }
+
+pub fn main() void {
+    // just to be able to compile and run the tests
+}
