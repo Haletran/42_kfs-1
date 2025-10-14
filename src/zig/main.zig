@@ -3,6 +3,10 @@ const expectEqual = std.testing.expectEqual;
 
 const VGA_WIDTH = 80;
 const VGA_HEIGHT = 25;
+const SHIFT_PRESSED: usize = 0x2a;
+const SHIFT_RELEASED: usize = 0xAA;
+const DELETE_KEY: usize = 0x0E;
+var shift = false;
 // RAM zone mapped to the screen, so
 const VGA_MEMORY: usize = 0xb8000;
 // buffer to modify the posistion to put the character to the screen ex : 0xB8004 2,0
@@ -35,9 +39,8 @@ const vga_color = enum(u4) {
     VGA_COLOR_WHITE = 15,
 };
 
-const keymap = [3]u8{ 'a', 'b', 'c' };
-
-const keymaps = [_]u8{ 0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 0, 0, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', 0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0 };
+const keymaps_not_shifted = [_]u8{ 0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 0, 0, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', 0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0 };
+const keymaps_shifted = [_]u8{ 0, 0, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', 0, 0, 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', 0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~', 0, '|', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0 };
 
 // dont understand anything (WTF)
 pub fn inb(port: u16) u8 {
@@ -145,12 +148,30 @@ fn scankey() u8 {
     }
 }
 
+fn getKey(scancode: u8) u8 {
+    if (shift) {
+        return keymaps_shifted[scancode];
+    } else {
+        return keymaps_not_shifted[scancode];
+    }
+}
+
 fn render_input() void {
     const scancode: u8 = scankey();
-    if (scancode < keymaps.len) {
-        const base_position: usize = terminal_row * VGA_WIDTH;
+    const base_position: usize = terminal_row * VGA_WIDTH;
+
+    // shift boolean
+    if (scancode == SHIFT_PRESSED) {
+        shift = true;
+        return;
+    } else if (scancode == SHIFT_RELEASED) {
+        shift = false;
+        return;
+    }
+
+    if (scancode < keymaps_not_shifted.len or scancode < keymaps_shifted.len) {
         // delete last character
-        if (scancode == 0x0E) {
+        if (scancode == DELETE_KEY) {
             if (character_position > 0) {
                 character_position -= 1;
                 putchar(' ', base_position + character_position);
@@ -159,7 +180,7 @@ fn render_input() void {
         }
         // add a character
         else {
-            const c: u8 = keymaps[scancode];
+            const c: u8 = getKey(scancode);
             if (c != 0) {
                 putchar(c, character_position + base_position);
                 if (c != '\n') {

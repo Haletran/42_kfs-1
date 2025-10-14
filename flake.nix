@@ -25,7 +25,7 @@
               unzip i686-elf-tools-linux.zip -d tools
               rm i686-elf-tools-linux.zip
             fi 
-            #exec zsh
+            exec zsh
           '';
         };
       });
