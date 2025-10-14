@@ -7,7 +7,7 @@ const SHIFT_PRESSED: usize = 0x2a;
 const SHIFT_RELEASED: usize = 0xAA;
 const DELETE_KEY: usize = 0x0E;
 var shift = false;
-// RAM zone mapped to the screen, so
+// RAM zone mapped to the screen
 const VGA_MEMORY: usize = 0xb8000;
 // buffer to modify the posistion to put the character to the screen ex : 0xB8004 2,0
 // since each character is equal to 2 bytes (16bits) (byte 0 = ascii code - byte 1 = color 4bits bg and 4bits fg)
@@ -140,7 +140,6 @@ fn put_string(str: []const u8) void {
     moveCursor(@intCast(character_position), @intCast(terminal_row));
 }
 
-// get the scancode of the pressed key and return it
 fn scankey() u8 {
     while (true) {
         if ((inb(0x64) & 0x1) != 0)
@@ -156,11 +155,29 @@ fn getKey(scancode: u8) u8 {
     }
 }
 
+// dummy scroll since it doesn't keep track of old character so really really dumb but allow for infinite text row
+fn scroll_down() void {
+    if (terminal_row >= VGA_HEIGHT) {
+        for (0..(VGA_HEIGHT - 1)) |y| {
+            for (0..VGA_WIDTH) |x| {
+                const from_index: usize = (y + 1) * VGA_WIDTH + x;
+                const to_index: usize = y * VGA_WIDTH + x;
+                buffer[to_index] = buffer[from_index];
+            }
+        }
+        // clear the last line
+        const last_line_start: usize = (VGA_HEIGHT - 1) * VGA_WIDTH;
+        for (0..VGA_WIDTH) |x| {
+            buffer[last_line_start + x] = vga_entry(' ', terminal_color);
+        }
+        terminal_row = VGA_HEIGHT - 1;
+    }
+}
+
 fn render_input() void {
     const scancode: u8 = scankey();
     const base_position: usize = terminal_row * VGA_WIDTH;
 
-    // shift boolean
     if (scancode == SHIFT_PRESSED) {
         shift = true;
         return;
@@ -168,7 +185,6 @@ fn render_input() void {
         shift = false;
         return;
     }
-
     if (scancode < keymaps_not_shifted.len or scancode < keymaps_shifted.len) {
         if (scancode == DELETE_KEY) {
             // delete last character
@@ -221,5 +237,6 @@ export fn kernel_main() void {
     welcome_screen();
     while (true) {
         render_input();
+        scroll_down();
     }
 }
