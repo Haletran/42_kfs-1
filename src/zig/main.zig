@@ -41,49 +41,54 @@ fn scroll_down() void {
     }
 }
 
+fn delete_character(base_position: usize) void {
+    // delete last character
+    if (v.character_position > 0) {
+        v.character_position -= 1;
+        utils.putchar(' ', base_position + v.character_position);
+        utils.moveCursor(@intCast(v.character_position), @intCast(v.terminal_row));
+    }
+    // delete the last character of the previous line if there position pos,0 so goback to the last line to delete
+    else if (v.character_position == 0 and v.terminal_row >= 1) {
+        v.terminal_row -= 1;
+        v.character_position = VGA_WIDTH - 1;
+        const new_base_position: usize = v.terminal_row * VGA_WIDTH;
+        utils.putchar(' ', new_base_position + v.character_position);
+        utils.moveCursor(@intCast(v.character_position), @intCast(v.terminal_row));
+    }
+}
+
+fn add_character(base_position: usize, scancode: u8) void {
+    const c: u8 = utils.getKey(scancode);
+    if (c != 0) {
+        utils.putchar(c, v.character_position + base_position);
+        if (c != '\n') {
+            v.character_position += 1;
+        }
+        if (v.character_position >= VGA_WIDTH) {
+            v.terminal_row += 1;
+            v.character_position = 0;
+        }
+        utils.moveCursor(@intCast(v.character_position), @intCast(v.terminal_row));
+    }
+}
+
 fn render_input() void {
     const scancode: u8 = utils.scankey();
     const base_position: usize = v.terminal_row * VGA_WIDTH;
 
-    if (scancode == SHIFT_PRESSED) {
-        v.shift = true;
-        return;
-    } else if (scancode == SHIFT_RELEASED) {
-        v.shift = false;
-        return;
-    }
-    if (scancode < keymaps_not_shifted.len or scancode < keymaps_shifted.len) {
-        if (scancode == DELETE_KEY) {
-            // delete last character
-            if (v.character_position > 0) {
-                v.character_position -= 1;
-                utils.putchar(' ', base_position + v.character_position);
-                utils.moveCursor(@intCast(v.character_position), @intCast(v.terminal_row));
-            }
-            // delete the last character of the previous line if there position pos,0 so goback to the last line to delete
-            else if (v.character_position == 0 and v.terminal_row >= 1) {
-                v.terminal_row -= 1;
-                v.character_position = VGA_WIDTH - 1;
-                const new_base_position: usize = v.terminal_row * VGA_WIDTH;
-                utils.putchar(' ', new_base_position + v.character_position);
-                utils.moveCursor(@intCast(v.character_position), @intCast(v.terminal_row));
-            }
-        }
-        // add a character
-        else {
-            const c: u8 = utils.getKey(scancode);
-            if (c != 0) {
-                utils.putchar(c, v.character_position + base_position);
-                if (c != '\n') {
-                    v.character_position += 1;
+    switch (scancode) {
+        SHIFT_PRESSED => v.shift = true,
+        SHIFT_RELEASED => v.shift = false,
+        else => {
+            if (scancode < keymaps_not_shifted.len or scancode < keymaps_shifted.len) {
+                if (scancode == DELETE_KEY) {
+                    delete_character(base_position);
+                } else {
+                    add_character(base_position, scancode);
                 }
-                if (v.character_position >= VGA_WIDTH) {
-                    v.terminal_row += 1;
-                    v.character_position = 0;
-                }
-                utils.moveCursor(@intCast(v.character_position), @intCast(v.terminal_row));
             }
-        }
+        },
     }
 }
 
