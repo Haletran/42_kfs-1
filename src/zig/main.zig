@@ -1,4 +1,5 @@
 const v = @import("variables.zig");
+const std = @import("std");
 const utils = @import("utils.zig");
 
 const VGA_WIDTH = v.VGA_WIDTH;
@@ -9,6 +10,9 @@ const keymaps_shifted = v.keymaps_shifted;
 const SHIFT_PRESSED = v.SHIFT_PRESSED;
 const SHIFT_RELEASED = v.SHIFT_RELEASED;
 const DELETE_KEY = v.DELETE_KEY;
+const PAGE_DOWN = 0x51;
+const PAGE_UP = 0x49;
+const allocator = std.testing.allocator;
 
 // color the fullscreen in the chosen terminal color
 fn init_term() void {
@@ -23,8 +27,8 @@ fn init_term() void {
 }
 
 // dummy scroll since it doesn't keep track of old character so really really dumb but allow for infinite text row
-fn scroll_down() void {
-    if (v.terminal_row >= VGA_HEIGHT) {
+fn scroll_down(page_key: bool) void {
+    if ((v.terminal_row >= VGA_HEIGHT) or page_key == true) {
         for (0..(VGA_HEIGHT - 1)) |y| {
             for (0..VGA_WIDTH) |x| {
                 const from_index: usize = (y + 1) * VGA_WIDTH + x;
@@ -38,6 +42,12 @@ fn scroll_down() void {
             v.buffer[last_line_start + x] = utils.vga_entry(' ', v.terminal_color);
         }
         v.terminal_row = VGA_HEIGHT - 1;
+    }
+}
+
+fn scroll_up(page_key: bool) void {
+    if (page_key == true) {
+        utils.put_string("GO UP MAN\n");
     }
 }
 
@@ -80,6 +90,8 @@ fn render_input() void {
     switch (scancode) {
         SHIFT_PRESSED => v.shift = true,
         SHIFT_RELEASED => v.shift = false,
+        PAGE_DOWN => scroll_down(true),
+        PAGE_UP => scroll_up(true),
         else => {
             if (scancode < keymaps_not_shifted.len or scancode < keymaps_shifted.len) {
                 if (scancode == DELETE_KEY) {
@@ -108,6 +120,6 @@ export fn kernel_main() void {
     welcome_screen();
     while (true) {
         render_input();
-        scroll_down();
+        scroll_down(false);
     }
 }

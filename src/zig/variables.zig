@@ -16,7 +16,6 @@ pub var terminal_row: usize = 0;
 pub var terminal_column: usize = 0;
 pub var character_position: usize = 0;
 pub const ArrayList = std.ArrayList;
-pub const test_allocator = std.testing.allocator;
 
 // standard color palette from IBM computer
 pub const vga_color = enum(u4) {
