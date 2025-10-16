@@ -6,6 +6,7 @@ pub const SHIFT_PRESSED: usize = 0x2a;
 pub const SHIFT_RELEASED: usize = 0xAA;
 pub const DELETE_KEY: usize = 0x0E;
 pub var shift = false;
+pub var ctrl = false;
 // RAM zone mapped to the screen
 pub const VGA_MEMORY: usize = 0xb8000;
 // buffer to modify the posistion to put the character to the screen ex : 0xB8004 2,0

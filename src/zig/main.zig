@@ -12,6 +12,9 @@ const SHIFT_RELEASED = v.SHIFT_RELEASED;
 const DELETE_KEY = v.DELETE_KEY;
 const PAGE_DOWN = 0x51;
 const PAGE_UP = 0x49;
+const CTRL_PRESSED = 0x1D;
+const CTRL_RELEASED = 0x9D;
+const L_KEY = 0x26;
 const allocator = std.testing.allocator;
 
 // color the fullscreen in the chosen terminal color
@@ -90,8 +93,20 @@ fn render_input() void {
     switch (scancode) {
         SHIFT_PRESSED => v.shift = true,
         SHIFT_RELEASED => v.shift = false,
+        CTRL_PRESSED => v.ctrl = true,
+        CTRL_RELEASED => v.ctrl = false,
         PAGE_DOWN => scroll_down(true),
         PAGE_UP => scroll_up(true),
+        L_KEY => {
+            if (v.ctrl) {
+                init_term();
+                v.terminal_row = 0;
+                v.character_position = 0;
+                utils.moveCursor(0, 0);
+            } else {
+                add_character(base_position, L_KEY);
+            }
+        },
         else => {
             if (scancode < keymaps_not_shifted.len or scancode < keymaps_shifted.len) {
                 if (scancode == DELETE_KEY) {
