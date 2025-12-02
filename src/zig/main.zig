@@ -1,13 +1,9 @@
 const v = @import("variables.zig");
-const std = @import("std");
 const utils = @import("utils.zig");
 
 const VGA_WIDTH = v.VGA_WIDTH;
 const VGA_HEIGHT = v.VGA_HEIGHT;
 const vga_color = v.vga_color;
-const keymaps_not_shifted = v.keymaps_not_shifted;
-const keymaps_shifted = v.keymaps_shifted;
-const allocator = std.testing.allocator;
 
 // color the fullscreen in the chosen terminal color
 fn init_term() void {

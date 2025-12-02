@@ -5,8 +5,6 @@ const expectEqual = std.testing.expectEqual;
 
 const VGA_WIDTH = v.VGA_WIDTH;
 const vga_color = v.vga_color;
-const keymaps_not_shifted = v.keymaps_not_shifted;
-const keymaps_shifted = v.keymaps_shifted;
 
 // custom strlen
 pub fn strlen(str: []const u8) usize {
