@@ -32,8 +32,10 @@ pub fn build(b: *std.Build) void {
     const mkdir_zig_out = b.addSystemCommand(&.{ "mkdir", "-p", "zig-out" });
 
     const compile_asm = b.addSystemCommand(&.{
-        "i686-elf-as",
-        "src/boot.s",
+        "nasm",
+        "-f",
+        "elf32",
+        "src/boot.asm",
         "-o",
         "zig-out/boot.o",
     });
@@ -75,7 +77,6 @@ pub fn build(b: *std.Build) void {
         "grub-mkrescue",
         "-o",
         "zig-out/kfs.iso",
-        "--compress=xz",
         "iso",
     });
     create_iso.step.dependOn(&copy_to_iso.step);

@@ -13,4 +13,9 @@ SECTIONS
 		*(.multiboot)
 		*(.text)
 	}
+	.bss BLOCK(4K) : ALIGN(4K)
+	{
+		*(COMMON)
+		*(.bss)
+	}
 }
