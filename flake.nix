@@ -15,18 +15,22 @@
           buildInputs = [
             pkgs.zig
             pkgs.zsh
-            pkgs.tigervnc
             pkgs.mtools
             pkgs.qemu
             pkgs.grub2
+            pkgs.wget
+            pkgs.unzip
+            pkgs.dust
           ];
 
           shellHook = ''
-            if [ ! -d "tools" ]; then
+            if [ ! -d "$HOME/bin/tools" ]; then
+              mkdir -p $HOME/bin
               wget https://github.com/lordmilko/i686-elf-tools/releases/download/7.1.0/i686-elf-tools-linux.zip
               unzip i686-elf-tools-linux.zip -d tools
               rm i686-elf-tools-linux.zip
             fi 
+            export PATH="$HOME/bin/tools/bin:$PATH"
             exec zsh
           '';
         };

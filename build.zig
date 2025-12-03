@@ -22,7 +22,6 @@ pub fn build(b: *std.Build) void {
         .root_module = root_module,
     });
 
-    // Disable stack probing and provide compiler-rt builtins for freestanding target
     kernel.bundle_compiler_rt = true;
 
     const install_kernel = b.addInstallFile(
@@ -33,7 +32,7 @@ pub fn build(b: *std.Build) void {
     const mkdir_zig_out = b.addSystemCommand(&.{ "mkdir", "-p", "zig-out" });
 
     const compile_asm = b.addSystemCommand(&.{
-        "./tools/bin/i686-elf-as",
+        "i686-elf-as",
         "src/boot.s",
         "-o",
         "zig-out/boot.o",
@@ -41,7 +40,7 @@ pub fn build(b: *std.Build) void {
     compile_asm.step.dependOn(&mkdir_zig_out.step);
 
     const link_everything = b.addSystemCommand(&.{
-        "./tools/bin/i686-elf-gcc",
+        "i686-elf-gcc",
         "-T",
         "src/linker.ld",
         "-o",
@@ -76,6 +75,7 @@ pub fn build(b: *std.Build) void {
         "grub-mkrescue",
         "-o",
         "zig-out/kfs.iso",
+        "--compress=xz",
         "iso",
     });
     create_iso.step.dependOn(&copy_to_iso.step);
@@ -95,7 +95,7 @@ pub fn build(b: *std.Build) void {
         "rm",
         "-rf",
         "zig-out",
-        "zig-cache",
+        ".zig-cache",
         "out",
         "iso/boot/kfs.bin",
     });

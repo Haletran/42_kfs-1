@@ -6,7 +6,6 @@ const expectEqual = std.testing.expectEqual;
 const VGA_WIDTH = v.VGA_WIDTH;
 const vga_color = v.vga_color;
 
-// custom strlen
 pub fn strlen(str: []const u8) usize {
     var len: usize = 0;
 
