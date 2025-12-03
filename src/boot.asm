@@ -1,10 +1,13 @@
 BITS 32 ;tell compiler 32bits
+extern kernel_main
+
 
 %define ALIGN    (1 << 0)             
 %define MEMINFO  (1 << 1)             
 %define FLAGS    (ALIGN | MEMINFO) 
 %define MAGIC    0x1BADB002      
 %define CHECKSUM -(MAGIC + FLAGS) 
+
 
 section .multiboot
 align 4
@@ -20,7 +23,6 @@ stack_top:
 
 section .text
 global _start:function
-extern kernel_main
 _start:
 	mov esp, stack_top
 	call kernel_main
