@@ -35,7 +35,7 @@ pub fn build(b: *std.Build) void {
         "nasm",
         "-f",
         "elf32",
-        "src/boot.asm",
+        "src/boot/boot.asm",
         "-o",
         "zig-out/boot.o",
     });
@@ -44,7 +44,7 @@ pub fn build(b: *std.Build) void {
     const link_everything = b.addSystemCommand(&.{
         "i686-elf-gcc",
         "-T",
-        "src/linker.ld",
+        "src/boot/linker.ld",
         "-o",
         "zig-out/kfs.bin",
         "-ffreestanding",

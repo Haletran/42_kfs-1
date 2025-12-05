@@ -5,7 +5,37 @@ const expectEqual = std.testing.expectEqual;
 
 const VGA_WIDTH = v.VGA_WIDTH;
 const vga_color = v.vga_color;
+const keymaps_not_shifted = v.keymaps_not_shifted;
+const keymaps_shifted = v.keymaps_shifted;
 
+// dont understand anything (WTF)
+pub fn inb(port: u16) u8 {
+    return asm volatile ("inb %[port], %[ret]"
+        : [ret] "={al}" (-> u8),
+        : [port] "{dx}" (port),
+    );
+}
+pub inline fn outb(port: u16, value: u8) void {
+    asm volatile ("outb %[v], %[p]"
+        :
+        : [p] "{dx}" (port),
+          [v] "{al}" (value),
+        : .{ .memory = true });
+}
+
+//https://wiki.osdev.org/Text_Mode_Cursor
+pub inline fn moveCursor(x: u16, y: u16) void {
+    const pos: u16 = y * 80 + x;
+
+    // Send low byte
+    outb(0x3D4, 0x0F);
+    outb(0x3D5, @as(u8, @intCast(pos & 0xFF)));
+    // Send high byte
+    outb(0x3D4, 0x0E);
+    outb(0x3D5, @as(u8, @intCast((pos >> 8) & 0xFF)));
+}
+
+// custom strlen
 pub fn strlen(str: []const u8) usize {
     var len: usize = 0;
 
@@ -60,5 +90,22 @@ pub fn put_string(str: []const u8) void {
     for (0..len) |i| {
         putchar(str[i], pos + base);
         pos += 1;
+    }
+    moveCursor(@intCast(v.character_position), @intCast(v.terminal_row));
+}
+
+// read the register 0x64 and if bit 0 become 1 return the scancode given by inb
+pub fn scankey() u8 {
+    while (true) {
+        if ((inb(0x64) & 0x1) != 0)
+            return (inb(0x60));
+    }
+}
+
+pub fn getKey(scancode: u8) u8 {
+    if (v.shift) {
+        return keymaps_shifted[scancode];
+    } else {
+        return keymaps_not_shifted[scancode];
     }
 }
