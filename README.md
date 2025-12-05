@@ -30,25 +30,17 @@ The makefile must compile all your source files with the right flags and the rig
 whatever-you-choose), so make (<- joke) your Makefile’s rules correctly. After compilation, all the objects must be linked together in order to create the final
 Kernel binary.
 
-## Starting point
-
--> ***GRUB*** two-stage bootloader (multiboot)
-
--> compilation of the binary with ***Zig***
-
--> testing and booting the kernel : `qemu-system-i386 -cdrom kfs-1.iso`
-
--> use ***grub-mkrescue*** for iso creation
-
-
-## Installation
+## Launching the project
 
 ```sh
 # this will install zig compiler and other stuff
 nix develop
 
 # to launch the compilation
-bash build.sh
+make
+
+# to launch the kernel
+make run
 ```
 
 ## Ressources
