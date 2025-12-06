@@ -26,9 +26,9 @@ global _start:function
 _start:
 	mov esp, stack_top
 	call kernel_main
+	cli
 
 .hang:
-	cli
 	hlt
 	jmp .hang
 
