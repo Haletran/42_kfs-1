@@ -44,21 +44,21 @@ test "merge_char_color" {
     try expectEqual(@as(u16, 0x2041), vga_entry(@as(u8, 'A'), @as(u8, 32)));
 }
 
-pub fn putchar(c: u8, pos: usize) void {
+pub fn putchar(c: u8, pos: usize, text_color: u8) void {
     if (c == '\n') {
         v.terminal_row += 1;
         v.character_position = 0;
         return;
     }
-    v.buffer[pos] = vga_entry(c, v.terminal_color);
+    v.buffer[pos] = vga_entry(c, text_color);
 }
 
-pub fn put_string(str: []const u8) void {
+pub fn put_string(str: []const u8, text_color: u4) void {
     var pos: usize = 0;
     const len: usize = strlen(str);
     const base: usize = v.terminal_row * VGA_WIDTH;
     for (0..len) |i| {
-        putchar(str[i], pos + base);
+        putchar(str[i], pos + base, vga_entry_color(@intFromEnum((vga_color.VGA_COLOR_BLACK)), text_color));
         pos += 1;
     }
 }

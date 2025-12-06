@@ -12,7 +12,7 @@ pub fn build(b: *std.Build) void {
     });
 
     const root_module = b.createModule(.{
-        .root_source_file = b.path("src/zig/main.zig"),
+        .root_source_file = b.path("src/kernel/kmain.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -35,7 +35,7 @@ pub fn build(b: *std.Build) void {
         "nasm",
         "-f",
         "elf32",
-        "src/boot.asm",
+        "src/boot/boot.asm",
         "-o",
         "zig-out/boot.o",
     });
@@ -44,7 +44,7 @@ pub fn build(b: *std.Build) void {
     const link_everything = b.addSystemCommand(&.{
         "i686-elf-gcc",
         "-T",
-        "src/linker.ld",
+        "src/boot/linker.ld",
         "-o",
         "zig-out/kfs.bin",
         "-ffreestanding",
